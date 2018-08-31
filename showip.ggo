@@ -1,0 +1,5 @@
+args "-F cmdline-showip --unamed-opts=hosts"
+package "C++ Sockets Wrapper"
+version "0.1"
+option "ipv4" 4 "Force IPv4 mode" optional
+option "ipv6" 6 "Force IPv6 mode" optional
