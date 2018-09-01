@@ -23,9 +23,8 @@ namespace networking {
 int main (int argc, char *argv[]) {
 	if (argc != 3) {
 		std::cerr << "Usage: " << argv[0] << " host port" << std::endl;
-		exit(EXIT_FAILURE);
+		return -1;
 	}
-	int exit_status = EXIT_SUCCESS;
 	try {
 	  networking::sock_stream_cli a(argv[1], argv[2]);
 		int me = fork();
@@ -41,7 +40,7 @@ int main (int argc, char *argv[]) {
 		}
 	} catch (std::exception &e) {
 		std::cerr << "Error: " << e.what() << std::endl;
-	  exit_status = EXIT_FAILURE;
+	  return -1;
 	}
-	exit(exit_status);
+  return 0;
 }

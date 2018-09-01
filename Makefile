@@ -12,7 +12,7 @@ showip: showip.cc cmdline-showip.c
 cmdline-showip.c: showip.ggo
 	gengetopt < $<
 
-%: %.cc
+%: %.cc socket.h
 	$(CC) $(CFLAGS) $< -o $@
 
 clean-bak:
