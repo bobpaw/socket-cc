@@ -20,7 +20,12 @@ namespace networking {
 	};
 }
 
+void kill_children (void) {
+  kill(0, SIGTERM);
+}
+
 int main (int argc, char *argv[]) {
+  atexit(*kill_children);
 	if (argc != 3) {
 		std::cerr << "Usage: " << argv[0] << " host port" << std::endl;
 		return -1;
@@ -29,7 +34,7 @@ int main (int argc, char *argv[]) {
 	  networking::sock_stream_cli a(argv[1], argv[2]);
 		int me = fork();
 		std::string buf;
-		while (waitpid(-1, NULL, WNOHANG) != 0) {
+		while (waitpid(-1, NULL, WNOHANG) == 0) {
 			if (me == 0) {
 				a.read(64);
 				std::cout << a.data << std::endl;

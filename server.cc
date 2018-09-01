@@ -23,11 +23,11 @@ namespace networking {
 		sock_stream_serv () : sock_stream_serv(NULL) {}
 		sock_stream_serv (char *port) : sock_stream(NULL, port, AI_PASSIVE) {
 		  std::cerr << "server constructor called." << std::endl;
-		  lfd = 0;
+		  lfd = -1;
 			if (bind(fd, result->ai_addr, result->ai_addrlen) != 0) {
 				throw sock_exception("bind", std::strerror(errno));
 			}
-			if (listen(fd, 20) != 0) {
+			if (listen(fd, 10) != 0) {
 				throw sock_exception("listen", std::strerror(errno));
 			}
 		}
@@ -37,12 +37,17 @@ namespace networking {
 		void s_accept (void) {
 			lfd = fd;
 			fd = accept(lfd, NULL, NULL);
-			if (fd == -1) throw sock_exception("listen", std::strerror(errno));
+			if (fd == -1) throw sock_exception("accept", std::strerror(errno));
 		}
 	};
 }
 
+void kill_child (void) {
+  kill(0, SIGTERM);
+}
+
 int main (int argc, char *argv[]) {
+  atexit(*kill_child);
 	if (argc != 2) {
 		std::cerr << "Usage: " << argv[0] << " port" << std::endl;
 		return -1;
@@ -52,7 +57,7 @@ int main (int argc, char *argv[]) {
 		a.s_accept();
 		int me = fork();
 		std::string buf;
-		while (waitpid(-1, NULL, WNOHANG) != 0) {
+		while (waitpid(-1, NULL, WNOHANG) == 0) {
 			if (me == 0) {
 				a.read(64);
 				std::cout << a.data << std::endl;
