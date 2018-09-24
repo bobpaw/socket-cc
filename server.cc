@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <cstring>
+#include <csignal>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -46,8 +47,14 @@ void kill_child (void) {
   kill(0, SIGTERM);
 }
 
+sig_atomic_t usr1given = 0;
+
+void handle (int a) {
+if (a == SIGTERM) usr1given = 1;
+}
 int main (int argc, char *argv[]) {
   atexit(*kill_child);
+  signal(SIGTERM, *handle);
 	if (argc != 2) {
 		std::cerr << "Usage: " << argv[0] << " port" << std::endl;
 		return -1;
@@ -57,7 +64,7 @@ int main (int argc, char *argv[]) {
 		a.s_accept();
 		int me = fork();
 		std::string buf;
-		while (waitpid(-1, NULL, WNOHANG) == 0) {
+		while (waitpid(-1, NULL, WNOHANG) == 0 && usr1given != 1) {
 			if (me == 0) {
 				a.read(64);
 				std::cout << a.data << std::endl;
