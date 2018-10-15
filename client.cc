@@ -1,48 +1,31 @@
-#include <cstring>
-#include <cerrno>
-#include <sys/socket.h>
-#include <string>
-#include <iostream>
-#include <exception>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include "socket.h"
+#include "client.h"
 
-namespace networking {
-	class sock_stream_cli : public sock_stream {
-	public:
-		sock_stream_cli(char *host, char *port) : sock_stream(host, port) {
-			if (connect(fd, result->ai_addr, result->ai_addrlen) == -1) {
-				throw sock_exception("connect", std::strerror(errno));
-			}
-		}
-	};
+void read_loop (networking::sock_stream &fd) {
+	while (!fd.closed()) {
+		fd.read();
+		std::cout << fd.data << std::endl;
+	}
 }
 
-void kill_children (void) {
-  kill(0, SIGTERM);
+void write_loop (networking::sock_stream &fd) {
+	while (!fd.closed()) {
+		std::getline(std::cin, fd.data);
+		fd.write();
+		if (std::cin.eof()) fd.send_close();
+	}
 }
 
 int main (int argc, char *argv[]) {
-  atexit(*kill_children);
 	if (argc != 3) {
 		std::cerr << "Usage: " << argv[0] << " host port" << std::endl;
 		return -1;
 	}
 	try {
-	  networking::sock_stream_cli a(argv[1], argv[2]);
-		int me = fork();
-		std::string buf;
-		while (waitpid(-1, NULL, WNOHANG) == 0) {
-			if (me == 0) {
-				a.read(64);
-				std::cout << a.data << std::endl;
-			} else {
-				std::getline(std::cin, buf);
-				a.writep(buf.c_str(), buf.length());
-			}
-		}
+		networking::sock_stream_cli a(argv[1], argv[2]);
+		std::thread reader(read_loop, std::ref(a));
+		std::thread writer(write_loop, std::ref(a));
+		writer.join();
+		reader.join();
 	} catch (std::exception &e) {
 		std::cerr << "Error: " << e.what() << std::endl;
 	  return -1;
