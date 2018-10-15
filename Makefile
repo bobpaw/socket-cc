@@ -1,22 +1,33 @@
 CC = g++
-CFLAGS = -g -Og -Wall -pedantic
+MAKE_CFLAGS = $(CFLAGS) -g -Og -Wall -pedantic -pthread
 
 targets = client server showip
 
 ALL: $(targets)
-.PHONY: clean clean-bak
+.PHONY: clean clean-bak ALL
 
 showip: showip.cc cmdline-showip.c
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(MAKE_CFLAGS) $^ -o $@
 
 cmdline-showip.c: showip.ggo
 	gengetopt < $<
 
-%: %.cc socket.h
-	$(CC) $(CFLAGS) $< -o $@
+client: client.o socket.o
+	$(CC) $(MAKE_CFLAGS) $^ -o $@
+
+server: server.o socket.o
+	$(CC) $(MAKE_CFLAGS) $^ -o $@
+
+%.o: %.cc %.h
+	$(CC) $(MAKE_CFLAGS) -c $< -o $@
 
 clean-bak:
 	rm -f *~ \#*#
 
-clean: clean-bak
+clean:
 	rm -f $(targets) *.o
+
+clean-cmdline:
+	rm -f cmdline-showip.c cmdline-showip.h
+
+full-clean: clean clean-bak clean-cmdline
