@@ -32,8 +32,10 @@ int main (int argc, char *argv[]) {
 			cmdline_parser_free(&args);
 			return -1;
 		}
-		addr = (struct sockaddr_in*) result->ai_addr;
-		std::cout << "IP Address: " << inet_ntoa(addr->sin_addr) << std::endl;
+			for (auto rp = result; rp != NULL; rp = rp->ai_next) {
+			addr = (struct sockaddr_in*) result->ai_addr;
+			std::cout << "IP Address: " << inet_ntoa(addr->sin_addr) << std::endl;
+		}
 		freeaddrinfo(result);
 	}
 	cmdline_parser_free(&args);
