@@ -55,10 +55,11 @@ namespace networking {
 	};
 
 	class sock_stream {
-	protected:
+	private:
 		bool closed_;
-		int fd;
 		size_t count_;
+	protected:
+		int fd;
 		struct addrinfo *result;
 	public:
 		std::string data;
