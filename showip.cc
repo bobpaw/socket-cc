@@ -33,7 +33,7 @@ int main (int argc, char *argv[]) {
 			return -1;
 		}
 			for (auto rp = result; rp != NULL; rp = rp->ai_next) {
-			addr = (struct sockaddr_in*) result->ai_addr;
+			addr = (struct sockaddr_in*) rp->ai_addr;
 			std::cout << "IP Address: " << inet_ntoa(addr->sin_addr) << std::endl;
 		}
 		freeaddrinfo(result);
